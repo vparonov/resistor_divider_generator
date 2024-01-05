@@ -10,6 +10,10 @@ class Resistor(abc.ABC):
     def value(self) -> float:
         pass 
 
+    @abc.abstractmethod
+    def len(self)-> int:
+        pass
+
 class ResistorNetwork(Resistor, abc.ABC):
     @abc.abstractmethod
     def add(self, element, count=1):
@@ -25,16 +29,24 @@ class BasicResistor(Resistor):
 
     def value(self) -> float:
         return self._value 
+    
+    def len(self) -> int:
+        return 1
 
 @Resistor.register
 class SeriesResistorNetwork(ResistorNetwork):
     def  __init__(self) -> None:
         self.series_elements = []
-        self.parallel_elements = [] 
-
+  
     def add(self, element, count = 1):
         for _ in range(count):
             self.series_elements.append(element)
+
+    def len(self):
+        l = 0
+        for e in self.series_elements:
+            l+=e.len()
+        return l 
 
     def __str__(self) -> str:
         return "("+ "+".join([str(el) for el in self.series_elements]) + ")"
@@ -48,12 +60,17 @@ class SeriesResistorNetwork(ResistorNetwork):
 @Resistor.register
 class ParallelResistorNetwork(ResistorNetwork):
     def  __init__(self) -> None:
-        self.series_elements = []
         self.parallel_elements = [] 
 
     def add(self, element, count= 1):
         for _ in range(count):
             self.parallel_elements.append(element)
+
+    def len(self):
+        l = 0
+        for e in self.parallel_elements:
+            l+=e.len()
+        return l 
 
     def __str__(self) -> str:
         if len(self.parallel_elements) > 0:
@@ -86,6 +103,9 @@ class PSResistorNetwork(Resistor):
             sn.add(r, s)
             self.parallel_n.add(sn)
 
+    def len(self):
+        return self.parallel_n.len()
+        
     def __str__(self) -> str:
         return str(self.parallel_n)
             
@@ -121,18 +141,21 @@ if __name__ == "__main__":
     print(c)
   
     r1 = BasicResistor(100.0) 
- 
+    print(r1.len())
+
     n1 = ParallelResistorNetwork()
 
     n1.add(r1, 10)
- 
+    print(f"n1.len = {n1.len()}")
     n2 = SeriesResistorNetwork()
     n2.add(n1, 2)
-
+    print(f"n2.len = {n2.len()}")
+ 
 
     n3 = ParallelResistorNetwork()
     n3.add(n2, 2)
-
+    print(f"n3.len = {n3.len()}")
+ 
     print(n3.value())
 
     print(n3)
