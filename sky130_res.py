@@ -4,7 +4,7 @@ from res import Resistor
 class SKY130_res_xhigh_po_0p35(Resistor):
     def __init__(self, l = 0, r = 0) -> None:
         self.w = 0.35
-        if l > 0:
+        if l > 0:   
             self.l = l
         else:
             self.l = (r * self.w)/2000.0 
